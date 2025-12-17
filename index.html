@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#FF8C00">
+    <title>工作节点记录</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <header class="mobile-header">
+            <div class="header-left">
+                <button id="menu-btn" class="menu-btn" title="菜单">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="header-center">
+                <div class="project-name-label" onclick="pm.editProjectLabel()">name</div>
+                <div class="title-with-share">
+                    <input type="text" id="project-title" value="我的项目" class="project-title-input">
+                    <button id="share-project-btn" class="share-project-btn-small" title="共享项目">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="new-project-btn" class="new-project-btn" title="新建项目">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="mobile-main">
+            <!-- 进度环区域 -->
+            <section class="progress-section">
+                <div class="progress-wheel-container">
+                    <svg class="progress-wheel" width="200" height="200" viewBox="0 0 200 200">
+                        <defs>
+                            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:rgba(255, 255, 255, 1);stop-opacity:1"></stop>
+                                <stop offset="50%" style="stop-color:rgba(255, 165, 0, 1);stop-opacity:1"></stop>
+                                <stop offset="100%" style="stop-color:rgba(255, 255, 0, 0.9);stop-opacity:0.95"></stop>
+                            </linearGradient>
+                            <filter id="glassEffect" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"></feGaussianBlur>
+                                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.15 0" result="glass"></feColorMatrix>
+                                <feComposite in="SourceGraphic" in2="glass" operator="over"></feComposite>
+                            </filter>
+                        </defs>
+                        <circle class="progress-wheel-bg" cx="100" cy="100" r="90" fill="none" stroke="rgba(255, 255, 255, 0.4)" stroke-width="10" filter="url(#glassEffect)"></circle>
+                        <circle class="progress-wheel-fill" cx="100" cy="100" r="90" fill="none" stroke="url(#progressGradient)" stroke-width="10" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="565.48" stroke-dashoffset="565.48" filter="url(#glassEffect)"></circle>
+                        <text class="progress-text" x="100" y="100" text-anchor="middle" dy=".3em" style="fill: rgb(139, 69, 19); font-size: 20px;"></text>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- 节点列表区域 -->
+            <section class="milestones-section">
+                <div class="section-header">
+                    <h2>关键节点</h2>
+                    <span class="milestones-count" id="milestones-count">0/0</span>
+                </div>
+                <ul id="milestones-list" class="milestones-list"></ul>
+                
+                <!-- 添加节点区域 -->
+                <div class="add-milestone-container">
+                    <div class="input-group">
+                        <input type="text" id="new-milestone-note" placeholder="备注（可选）" class="new-milestone-note-input">
+                    </div>
+                    <button id="add-milestone-btn" class="add-milestone-btn" title="添加节点">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部工具栏 -->
+        <footer class="mobile-footer">
+            <button id="export-btn" class="footer-btn" title="导出报告">
+                <i class="fas fa-file-export"></i>
+                <span>导出</span>
+            </button>
+            <button id="stats-btn" class="footer-btn" title="统计信息">
+                <i class="fas fa-chart-bar"></i>
+                <span>统计</span>
+            </button>
+            <button id="settings-btn" class="footer-btn" title="设置">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- 侧边菜单 -->
+    <div id="side-menu" class="side-menu hidden">
+        <div class="side-menu-content">
+            <div class="side-menu-header">
+                <h3>项目列表</h3>
+                <button id="close-menu-btn" class="close-menu-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="project-selector-container">
+                <select id="project-selector" class="project-selector mobile-selector"></select>
+            </div>
+            <div class="side-menu-footer">
+                <div class="current-time" id="side-menu-time"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享模态框 -->
+    <div id="share-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>共享项目</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-link-container">
+                        <input type="text" id="share-link" readonly class="share-link-input">
+                        <button id="copy-link-btn" class="copy-link-btn">复制</button>
+                    </div>
+                    <div class="share-actions">
+                        <button id="wechat-share-btn" class="share-action-btn wechat-btn">
+                            <i class="fab fa-weixin"></i>
+                            <span>微信分享</span>
+                        </button>
+                        <button id="more-share-btn" class="share-action-btn more-btn">
+                            <i class="fas fa-ellipsis-h"></i>
+                            <span>更多</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计模态框 -->
+    <div id="stats-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>项目统计</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-milestones">0</div>
+                        <div class="stat-label">总节点数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="completed-milestones">0</div>
+                        <div class="stat-label">已完成</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="pending-milestones">0</div>
+                        <div class="stat-label">待完成</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="completion-rate">0%</div>
+                        <div class="stat-label">完成率</div>
+                    </div>
+                </div>
+                <div class="stats-chart">
+                    <canvas id="progress-chart" width="300" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>设置</h2>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <label for="auto-save">自动保存</label>
+                        <label class="switch">
+                            <input type="checkbox" id="auto-save" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label for="dark-mode">深色模式</label>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label for="notifications">通知提醒</label>
+                        <label class="switch">
+                            <input type="checkbox" id="notifications" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <button id="clear-data-btn" class="danger-btn">清除所有数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
